@@ -127,11 +127,10 @@ namespace PosApiJwtConsumer
             //DONE: PostMessage
             var client = new RestClient(BASEURL);
             var request = new RestRequest("Messages", Method.POST);
-            //request.AddParameter("data", data);
             request.AddJsonBody(message.ToJson);
             request.AddHeader("Authorization", "Bearer " + token);
             var response = client.Execute(request);
-            if (response.Content == "Invalid customer" || response.Content == "No order was found" || response.Content.Trim().Length == 0)
+            if (response.Content == "Invalid message" || response.Content == "No message was found" || response.Content.Trim().Length == 0)
             {
                 return new List<Messages>();
             }
@@ -140,8 +139,17 @@ namespace PosApiJwtConsumer
 
         public static Message PutMessage(string token, Message message)
         {
-            //TODO: PutMessage
-            return new Message();
+            //DONE: PutMessage
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Messages", Method.PUT);
+            request.AddJsonBody(message.ToJson);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+            if (response.Content == "Invalid message" || response.Content == "No message was found" || response.Content.Trim().Length == 0)
+            {
+                return new List<Messages>();
+            }
+            return Message.FromJson(response.Content);
         }
 
         public static void DeleteMessage(string token, int id)
