@@ -61,47 +61,74 @@ namespace PosApiJwtConsumer
                         Stamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss") 
                     }
                 };
-                reply = PostMessage(loginResp.Token, reply);
-                Console.WriteLine(reply);
+                // reply = PostMessage(loginResp.Token, reply);
+                // Console.WriteLine(reply);
                 // BORRAR
-                DeleteMessage(loginResp.Token, x.MessageId);
+                // DeleteMessage(loginResp.Token, x.MessageId);
             }
 
-            // ACTUALIZAR ÚLTIMO MENSAJE ENVIADO
-            Console.WriteLine("\nACTUALIZADO:");
-            if (list.Count > 0){
-                msg = reply.MsgBody.Msg.Replace("RECIBIDO: ","Recibido: ");
-                reply.MsgBody.Msg = msg;
-                message = PutMessage(loginResp.Token, reply);
-                Console.WriteLine(message);
-            }
+        //     // ACTUALIZAR ÚLTIMO MENSAJE ENVIADO
+        //     Console.WriteLine("\nACTUALIZADO:");
+        //     if (list.Count > 0){
+        //         msg = reply.MsgBody.Msg.Replace("RECIBIDO: ","Recibido: ");
+        //         reply.MsgBody.Msg = msg;
+        //         message = PutMessage(loginResp.Token, reply);
+        //         Console.WriteLine(message);
+        //     }
 
-            // RECIBIR LISTADO VACIO
-            Console.WriteLine("\nLIST:");
-            list = GetMessages(loginResp.Token);
-            foreach (var x in list)
-            {
-                Console.WriteLine(x.MsgHeader());
-            }
-            Console.WriteLine();
+        //     // RECIBIR LISTADO VACIO
+        //     Console.WriteLine("\nLIST:");
+        //     list = GetMessages(loginResp.Token);
+        //     foreach (var x in list)
+        //     {
+        //         Console.WriteLine(x.MsgHeader());
+        //     }
+        //     Console.WriteLine();
         }
 
         public static LoginResponse PostLogin(LoginRequest login)
         {
             //TODO: PostLogin
-            return new LoginResponse();            
+             var client = new RestClient(BASEURL);
+            var request = new RestRequest("Users/login", Method.POST); //esto sale en el swagger
+            //request.AddParameter("data", data);
+            request.AddJsonBody(login.ToJson());
+            var response = client.Execute(request);
+            // Console.WriteLine("Content: " + response.Content);
+            // Console.WriteLine("Status Code: " + response.StatusCode);//NotFound|Created|BadRequest
+            if (response.StatusCode.ToString().Contains("BadRequest"))
+            {
+                return new LoginResponse { Token = response.Content };
+            }
+            return LoginResponse.FromJson(response.Content);         
         }
 
         public static List<Message> GetMessages(string token)
         {
             //TODO: GetMessages
-            return new List<Message>();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Messages", Method.GET);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+            // Console.WriteLine("\nGetMessages:");
+            // Console.WriteLine(response.Content);
+            if (response.Content.Contains("Invalid user") || response.Content.Trim().Length == 0)
+            {
+                return new List<Message>();
+            }
+            return Message.ListFromJson(response.Content);  
         }
 
         public static Message GetMessage(string token, int messageId)
         {
             //TODO: GetMessage
-            return new Message();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest($"/Messages/{messageId}", Method.GET);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+            Console.WriteLine("Content: " + response.Content);
+            Console.WriteLine("Status Code: " + response.StatusCode);//NotFound|OK
+            return Message.FromJson(response.Content);   
         }
 
         public static Message PostMessage(string token, Message message)
@@ -122,3 +149,4 @@ namespace PosApiJwtConsumer
         }
     }
 }
+
