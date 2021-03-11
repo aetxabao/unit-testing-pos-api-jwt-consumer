@@ -51,39 +51,39 @@ namespace PosApiJwtConsumer
                 // RECIBIR
                 message = GetMessage(loginResp.Token, x.MessageId);
                 // ENVIAR RESPUESTA
-                // msg = "RECIBIDO: " + message.MsgBody.Msg;
-                // reply = new Message
-                // {
-                //     To = message.From,
-                //     From = USERNAME,
-                //     MsgBody = new MsgBody { 
-                //         Msg = msg, 
-                //         Stamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss") 
-                //     }
-                // };
-                // reply = PostMessage(loginResp.Token, reply);
-                // Console.WriteLine(reply);
+                msg = "RECIBIDO: " + message.MsgBody.Msg;
+                reply = new Message
+                {
+                    To = message.From,
+                    From = USERNAME,
+                    MsgBody = new MsgBody { 
+                        Msg = msg, 
+                        Stamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss") 
+                    }
+                };
+                reply = PostMessage(loginResp.Token, reply);
+                Console.WriteLine(reply);
                 // BORRAR
                 // DeleteMessage(loginResp.Token, x.MessageId);
             }
 
-        //     // ACTUALIZAR ÚLTIMO MENSAJE ENVIADO
-        //     Console.WriteLine("\nACTUALIZADO:");
-        //     if (list.Count > 0){
-        //         msg = reply.MsgBody.Msg.Replace("RECIBIDO: ","Recibido: ");
-        //         reply.MsgBody.Msg = msg;
-        //         message = PutMessage(loginResp.Token, reply);
-        //         Console.WriteLine(message);
-        //     }
+            // ACTUALIZAR ÚLTIMO MENSAJE ENVIADO
+            Console.WriteLine("\nACTUALIZADO:");
+            if (list.Count > 0){
+                msg = reply.MsgBody.Msg.Replace("RECIBIDO: ","Recibido: ");
+                reply.MsgBody.Msg = msg;
+                message = PutMessage(loginResp.Token, reply);
+                Console.WriteLine(message);
+            }
 
-        //     // RECIBIR LISTADO VACIO
-        //     Console.WriteLine("\nLIST:");
-        //     list = GetMessages(loginResp.Token);
-        //     foreach (var x in list)
-        //     {
-        //         Console.WriteLine(x.MsgHeader());
-        //     }
-        //     Console.WriteLine();
+            // RECIBIR LISTADO VACIO
+            Console.WriteLine("\nLIST:");
+            list = GetMessages(loginResp.Token);
+            foreach (var x in list)
+            {
+                Console.WriteLine(x.MsgHeader());
+            }
+            Console.WriteLine();
         }
 
         public static LoginResponse PostLogin(LoginRequest login)
@@ -152,7 +152,16 @@ namespace PosApiJwtConsumer
         public static Message PutMessage(string token, Message message)
         {
             //TODO: PutMessage
-            return new Message();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest($"Messages", Method.PUT);
+            request.AddHeader("Authorization", "Bearer " + token);
+            request.AddJsonBody(message.ToJson());
+            var response = client.Execute(request);
+            //Console.WriteLine(response.StatusCode);//NoContent|BadRequest
+             if (response.StatusCode.ToString().Contains("BadRequest"))
+            {
+                return new Message();
+            }
         }
 
         public static void DeleteMessage(string token, int id)
