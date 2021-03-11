@@ -88,13 +88,18 @@ namespace PosApiJwtConsumer
 
         public static LoginResponse PostLogin(LoginRequest login)
         {
-            //TODO: PostLogin
-            return new LoginResponse();            
+            //DONE: PostLogin
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Users/login", Method.POST);
+            request.AddJsonBody(login.ToJson());
+            var response = client.Execute(request);
+            return LoginResponse.FromJson(response.Content);          
         }
 
         public static List<Message> GetMessages(string token)
         {
             //TODO: GetMessages
+            
             return new List<Message>();
         }
 
