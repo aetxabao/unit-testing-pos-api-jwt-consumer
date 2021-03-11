@@ -126,8 +126,8 @@ namespace PosApiJwtConsumer
             var request = new RestRequest($"/Messages/{messageId}", Method.GET);
             request.AddHeader("Authorization", "Bearer " + token);
             var response = client.Execute(request);
-            Console.WriteLine("Content: " + response.Content);
-            Console.WriteLine("Status Code: " + response.StatusCode);//NotFound|OK
+            // Console.WriteLine("Content: " + response.Content);
+            // Console.WriteLine("Status Code: " + response.StatusCode);//NotFound|OK
             return Message.FromJson(response.Content);   
         }
 
@@ -153,15 +153,16 @@ namespace PosApiJwtConsumer
         {
             //TODO: PutMessage
             var client = new RestClient(BASEURL);
-            var request = new RestRequest($"Messages", Method.PUT);
+            var request = new RestRequest($"/Messages/{token}", Method.PUT);
             request.AddHeader("Authorization", "Bearer " + token);
             request.AddJsonBody(message.ToJson());
             var response = client.Execute(request);
             //Console.WriteLine(response.StatusCode);//NoContent|BadRequest
-             if (response.StatusCode.ToString().Contains("BadRequest"))
+             if (response.StatusCode.ToString().Contains("NoContent") || response.StatusCode.ToString().Contains("BadRequest"))
             {
                 return new Message();
             }
+            return Message.FromJson(response.Content);
         }
 
         public static void DeleteMessage(string token, int id)
