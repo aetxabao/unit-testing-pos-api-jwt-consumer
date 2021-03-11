@@ -160,5 +160,7 @@ namespace PosApiJwtConsumer
             request.AddHeader("Authorization", "Bearer " + token);
             var response = client.Execute(request);
         }
+
+        
     }
 }
