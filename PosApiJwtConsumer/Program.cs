@@ -115,7 +115,13 @@ namespace PosApiJwtConsumer
         public static Message GetMessage(string token, int messageId)
         {
             //TODO: GetMessage
-            return new Message();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest($"/Messages/" + MessageId, Method.GET);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+            //Console.WriteLine(response.Content);
+            //Console.WriteLine(response.StatusCode);//NotFound|OK
+            return Message.FromJson(response.Content);
         }
 
         public static Message PostMessage(string token, Message message)
