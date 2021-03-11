@@ -155,6 +155,10 @@ namespace PosApiJwtConsumer
         public static void DeleteMessage(string token, int id)
         {
             //TODO: DeleteMessage
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest($"Messages/{id}", Method.DELETE);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
         }
     }
 }
