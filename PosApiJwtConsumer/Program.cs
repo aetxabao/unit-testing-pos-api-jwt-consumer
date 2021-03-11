@@ -114,20 +114,28 @@ namespace PosApiJwtConsumer
 
         public static Message GetMessage(string token, int messageId)
         {
-            //TODO: GetMessage
+            //DONE: GetMessage
             var client = new RestClient(BASEURL);
-            var request = new RestRequest($"/Messages/" + MessageId, Method.GET);
+            var request = new RestRequest("/Messages/" + MessageId, Method.GET);
             request.AddHeader("Authorization", "Bearer " + token);
             var response = client.Execute(request);
-            //Console.WriteLine(response.Content);
-            //Console.WriteLine(response.StatusCode);//NotFound|OK
             return Message.FromJson(response.Content);
         }
 
         public static Message PostMessage(string token, Message message)
         {
-            //TODO: PostMessage
-            return new Message();
+            //DONE: PostMessage
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Messages", Method.POST);
+            //request.AddParameter("data", data);
+            request.AddJsonBody(message.ToJson);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+            if (response.Content == "Invalid customer" || response.Content == "No order was found" || response.Content.Trim().Length == 0)
+            {
+                return new List<Messages>();
+            }
+            return Message.FromJson(response.Content);
         }
 
         public static Message PutMessage(string token, Message message)
