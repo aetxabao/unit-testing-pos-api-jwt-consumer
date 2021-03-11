@@ -64,7 +64,7 @@ namespace PosApiJwtConsumer
                 reply = PostMessage(loginResp.Token, reply);
                 Console.WriteLine(reply);
                 // BORRAR
-                // DeleteMessage(loginResp.Token, x.MessageId);
+                DeleteMessage(loginResp.Token, x.MessageId);
             }
 
             // ACTUALIZAR ÚLTIMO MENSAJE ENVIADO
@@ -167,6 +167,10 @@ namespace PosApiJwtConsumer
         public static void DeleteMessage(string token, int id)
         {
             //TODO: DeleteMessage
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest($"Messages/{id}", Method.DELETE);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
         }
     }
 }
