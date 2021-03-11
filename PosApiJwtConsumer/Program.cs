@@ -51,16 +51,16 @@ namespace PosApiJwtConsumer
                 // RECIBIR
                 message = GetMessage(loginResp.Token, x.MessageId);
                 // ENVIAR RESPUESTA
-                msg = "RECIBIDO: " + message.MsgBody.Msg;
-                reply = new Message
-                {
-                    To = message.From,
-                    From = USERNAME,
-                    MsgBody = new MsgBody { 
-                        Msg = msg, 
-                        Stamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss") 
-                    }
-                };
+                // msg = "RECIBIDO: " + message.MsgBody.Msg;
+                // reply = new Message
+                // {
+                //     To = message.From,
+                //     From = USERNAME,
+                //     MsgBody = new MsgBody { 
+                //         Msg = msg, 
+                //         Stamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss") 
+                //     }
+                // };
                 // reply = PostMessage(loginResp.Token, reply);
                 // Console.WriteLine(reply);
                 // BORRAR
@@ -134,7 +134,19 @@ namespace PosApiJwtConsumer
         public static Message PostMessage(string token, Message message)
         {
             //TODO: PostMessage
-            return new Message();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Messages", Method.POST);
+            request.AddHeader("Authorization", "Bearer " + token);
+            request.AddJsonBody(message.ToJson());
+            var response = client.Execute(request);
+            //Console.WriteLine(response.Content);
+            //Console.WriteLine(response.StatusCode);//NotFound|Created
+            if (response.StatusCode.ToString().Contains("NotFound"))
+            {
+                return new Message();
+            }
+            return Message.FromJson(response.Content);
+            
         }
 
         public static Message PutMessage(string token, Message message)
