@@ -105,9 +105,9 @@ namespace PosApiJwtConsumer
             var response = client.Execute(request);
             Console.WriteLine("\nGetOrders:");
             Console.WriteLine(response.Content);
-            if (response.Content == "Invalid customer" || response.Content == "No order was found" || response.Content.Trim().Length == 0)
+            if (response.StatusCode.ToString().Contains("BadRequest") || response.StatusCode.ToString().Contains("Unauthorized") || response.Content.Trim().Length == 0)
             {
-                return new List<Messages>();
+                return new List<Message>();
             }
             return Message.ListFromJson(response.Content);
         }
@@ -116,7 +116,7 @@ namespace PosApiJwtConsumer
         {
             //DONE: GetMessage
             var client = new RestClient(BASEURL);
-            var request = new RestRequest("/Messages/" + MessageId, Method.GET);
+            var request = new RestRequest("Messages/" + messageId, Method.GET);
             request.AddHeader("Authorization", "Bearer " + token);
             var response = client.Execute(request);
             return Message.FromJson(response.Content);
@@ -130,9 +130,9 @@ namespace PosApiJwtConsumer
             request.AddJsonBody(message.ToJson);
             request.AddHeader("Authorization", "Bearer " + token);
             var response = client.Execute(request);
-            if (response.Content == "Invalid message" || response.Content == "No message was found" || response.Content.Trim().Length == 0)
+            if (response.StatusCode.ToString().Contains("NotFound") || response.StatusCode.ToString().Contains("BadRequest") || response.StatusCode.ToString().Contains("Unauthorized"))
             {
-                return new List<Messages>();
+                return new Message();
             }
             return Message.FromJson(response.Content);
         }
@@ -145,9 +145,9 @@ namespace PosApiJwtConsumer
             request.AddJsonBody(message.ToJson);
             request.AddHeader("Authorization", "Bearer " + token);
             var response = client.Execute(request);
-            if (response.Content == "Invalid message" || response.Content == "No message was found" || response.Content.Trim().Length == 0)
+            if (response.StatusCode.ToString().Contains("NoContent") || response.StatusCode.ToString().Contains("Unauthorized"))
             {
-                return new List<Messages>();
+                return new Message();
             }
             return Message.FromJson(response.Content);
         }
@@ -156,11 +156,11 @@ namespace PosApiJwtConsumer
         {
             //TODO: DeleteMessage
             var client = new RestClient(BASEURL);
-            var request = new RestRequest($"Messages/{id}", Method.DELETE);
+            var request = new RestRequest("Messages/" + id, Method.DELETE);
             request.AddHeader("Authorization", "Bearer " + token);
             var response = client.Execute(request);
         }
 
-        
+
     }
 }
