@@ -29,9 +29,10 @@ namespace PosApiJwtConsumer
             Console.WriteLine("\nUsername:\n" + USERNAME);
 
             // TOKEN
-            loginReq = new LoginRequest { 
-                UserName = USERNAME, 
-                Password = PASSWORD 
+            loginReq = new LoginRequest
+            {
+                UserName = USERNAME,
+                Password = PASSWORD
             };
             loginResp = PostLogin(loginReq);
             Console.WriteLine("\nTOKEN:\n" + loginResp.Token);
@@ -56,9 +57,10 @@ namespace PosApiJwtConsumer
                 {
                     To = message.From,
                     From = USERNAME,
-                    MsgBody = new MsgBody { 
-                        Msg = msg, 
-                        Stamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss") 
+                    MsgBody = new MsgBody
+                    {
+                        Msg = msg,
+                        Stamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss")
                     }
                 };
                 reply = PostMessage(loginResp.Token, reply);
@@ -69,8 +71,9 @@ namespace PosApiJwtConsumer
 
             // ACTUALIZAR ÚLTIMO MENSAJE ENVIADO
             Console.WriteLine("\nACTUALIZADO:");
-            if (list.Count > 0){
-                msg = reply.MsgBody.Msg.Replace("RECIBIDO: ","Recibido: ");
+            if (list.Count > 0)
+            {
+                msg = reply.MsgBody.Msg.Replace("RECIBIDO: ", "Recibido: ");
                 reply.MsgBody.Msg = msg;
                 message = PutMessage(loginResp.Token, reply);
                 Console.WriteLine(message);
@@ -88,37 +91,80 @@ namespace PosApiJwtConsumer
 
         public static LoginResponse PostLogin(LoginRequest login)
         {
-            //TODO: PostLogin
-            return new LoginResponse();            
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Users/login", Method.POST);
+            //request.AddParameter("data", data);
+            request.AddJsonBody(login.ToJson());
+            var response = client.Execute(request);
+            //Console.WriteLine(response.Content);
+            //Console.WriteLine(response.StatusCode);//NotFound|Created|BadRequest
+            if (response.StatusCode.ToString().Contains("Invalid user"))
+            {
+                return new LoginResponse { Token = response.Content };
+            }
+            return LoginResponse.FromJson(response.Content);
         }
 
         public static List<Message> GetMessages(string token)
         {
-            //TODO: GetMessages
-            return new List<Message>();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Messages", Method.GET);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+            //Console.WriteLine("\nGetMessages:");
+            //Console.WriteLine(response.Content);
+            if (response.Content.Contains("Invalid user") || response.Content.Trim().Length == 0)
+            {
+                return new List<Message>();
+            }
+            return Message.ListFromJson(response.Content);
         }
 
         public static Message GetMessage(string token, int messageId)
         {
             //TODO: GetMessage
-            return new Message();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest($"/Messages/{messageId}", Method.GET);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+
+            return Message.FromJson(response.Content);
         }
 
         public static Message PostMessage(string token, Message message)
         {
-            //TODO: PostMessage
-            return new Message();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Messages", Method.POST);
+            request.AddHeader("Authorization", "Bearer " + token);
+            //request.AddParameter("data", data);
+            request.AddJsonBody(message.ToJson());
+            var response = client.Execute(request);
+            //Console.WriteLine(response.Content);
+            //Console.WriteLine(response.StatusCode);//NotFound|Created
+            return Message.FromJson(response.Content);
         }
 
         public static Message PutMessage(string token, Message message)
         {
-            //TODO: PutMessage
-            return new Message();
+            var client = new RestClient(BASEURL);
+            // var request = new RestRequest("TodoItems", Method.PUT);
+            // request.AddParameter("id", id);
+            // request.AddParameter("data", data);
+            var request = new RestRequest($"/Messages/{message.MessageId}", Method.PUT);
+            request.AddHeader("Authorization", "Bearer " + token);
+            request.AddJsonBody(message.ToJson());
+            var response = client.Execute(request);
+            //Console.WriteLine(response.StatusCode);//NoContent|BadRequest
+            return Message.FromJson(response.Content);
         }
 
         public static void DeleteMessage(string token, int id)
         {
-            //TODO: DeleteMessage
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest($"Messages/{id}", Method.DELETE);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+            //Console.WriteLine(response.StatusCode);//NotFound|NoContent
         }
     }
 }
