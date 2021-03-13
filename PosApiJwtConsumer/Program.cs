@@ -10,12 +10,12 @@ namespace PosApiJwtConsumer
     {
         public const string BASEURL = "https://localhost:5001/api";
 
-        private const string USERNAME = "test";
-        private const string PASSWORD = "M3l0c0t0n3s!";
+        // private const string USERNAME = "test";
+        // private const string PASSWORD = "M3l0c0t0n3s!";
         // private const string USERNAME = "other";
         // private const string PASSWORD = "T0m4t3s!";
-        // private const string USERNAME = "wrong";
-        // private const string PASSWORD = "xxxxxxxx";
+        private const string USERNAME = "wrong";
+        private const string PASSWORD = "xxxxxxxx";
 
         public static void Main(string[] args)
         {
@@ -29,7 +29,8 @@ namespace PosApiJwtConsumer
             Console.WriteLine("\nUsername:\n" + USERNAME);
 
             // TOKEN
-            loginReq = new LoginRequest { 
+            loginReq = new LoginRequest 
+            { 
                 UserName = USERNAME, 
                 Password = PASSWORD 
             };
@@ -69,7 +70,8 @@ namespace PosApiJwtConsumer
 
             // ACTUALIZAR ÚLTIMO MENSAJE ENVIADO
             Console.WriteLine("\nACTUALIZADO:");
-            if (list.Count > 0){
+            if (list.Count > 0)
+            {
                 msg = reply.MsgBody.Msg.Replace("RECIBIDO: ","Recibido: ");
                 reply.MsgBody.Msg = msg;
                 message = PutMessage(loginResp.Token, reply);
@@ -90,21 +92,17 @@ namespace PosApiJwtConsumer
         {
             //DONE: PostLogin
             var client = new RestClient(BASEURL);
-            var request = new RestRequest("/Users/login", Method.POST);
+            var request = new RestRequest("Users/login", Method.POST);
             request.AddJsonBody(login.ToJson());
             var response = client.Execute(request);
-            if (response.StatusCode.ToString().Contains("BadRequest"))
-            {
-                return new LoginResponse { Token = response.Content };
-            }
-            return LoginResponse.FromJson(response.Content);
+            return LoginResponse.FromJson(response.Content); 
         }
 
         public static List<Message> GetMessages(string token)
         {
             //DONE: GetMessages
             var client = new RestClient(BASEURL);
-            var request = new RestRequest("/Messages", Method.GET);
+            var request = new RestRequest("/Messages/", Method.GET);
             request.AddHeader("Authorization", "Bearer " + token);
             var response = client.Execute(request);
             if (response.StatusCode.ToString().Contains("BadRequest") || response.StatusCode.ToString().Contains("Unauthorized") || response.Content.Trim().Length == 0)
@@ -118,7 +116,7 @@ namespace PosApiJwtConsumer
         {
             //DONE: GetMessage
             var client = new RestClient(BASEURL);
-            var request = new RestRequest($"/Messages/{messageId}", Method.GET);
+            var request = new RestRequest("/Messages/" + messageId, Method.GET);
             request.AddHeader("Authorization", "Bearer " + token);
             var response = client.Execute(request);
             return Message.FromJson(response.Content);
@@ -128,9 +126,10 @@ namespace PosApiJwtConsumer
         {
             //DONE: PostMessage
             var client = new RestClient(BASEURL);
-            var request = new RestRequest("Messages", Method.POST);
-            request.AddJsonBody(message.ToJson());
+            var request = new RestRequest("/Messages/", Method.POST);
+            
             request.AddHeader("Authorization", "Bearer " + token);
+            request.AddJsonBody(message.ToJson());
             var response = client.Execute(request);
             if (response.StatusCode.ToString().Contains("NotFound") || response.StatusCode.ToString().Contains("BadRequest") || response.StatusCode.ToString().Contains("Unauthorized"))
             {
@@ -144,8 +143,9 @@ namespace PosApiJwtConsumer
             //DONE: PutMessage
             var client = new RestClient(BASEURL);
             var request = new RestRequest($"/Messages/{message.MessageId}", Method.PUT);
-            request.AddJsonBody(message.ToJson());
+            
             request.AddHeader("Authorization", "Bearer " + token);
+            request.AddJsonBody(message.ToJson());
             var response = client.Execute(request);
             if (response.StatusCode.ToString().Contains("NoContent") || response.StatusCode.ToString().Contains("Unauthorized"))
             {
