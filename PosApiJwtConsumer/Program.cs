@@ -89,36 +89,91 @@ namespace PosApiJwtConsumer
         public static LoginResponse PostLogin(LoginRequest login)
         {
             //TODO: PostLogin
-            return new LoginResponse();            
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Users/login", Method.POST); //esto sale en el swagger
+            //request.AddParameter("data", data);
+            request.AddJsonBody(login.ToJson());
+            var response = client.Execute(request);
+            // Console.WriteLine("Content: " + response.Content);
+            // Console.WriteLine("Status Code: " + response.StatusCode);//NotFound|Created|BadRequest
+            if (response.StatusCode.ToString().Contains("BadRequest"))
+            {
+                return new LoginResponse { Token = response.Content };
+            }
+            return LoginResponse.FromJson(response.Content);          
         }
 
         public static List<Message> GetMessages(string token)
         {
             //TODO: GetMessages
-            return new List<Message>();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Messages", Method.GET);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+            // Console.WriteLine("\nGetMessages:");
+            // Console.WriteLine(response.Content);
+            if (!response.Content.Contains("Invalid user") || response.Content.Trim().Length != 0)
+            {
+                return Message.ListFromJson(response.Content);
+            }
+            return null;
         }
 
         public static Message GetMessage(string token, int messageId)
         {
             //TODO: GetMessage
-            return new Message();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest($"/Messages/{messageId}", Method.GET);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+            // Console.WriteLine("Content: " + response.Content);
+            // Console.WriteLine("Status Code: " + response.StatusCode);//NotFound|OK
+            if (!response.Content.Contains("Invalid user") || response.Content.Trim().Length != 0)
+            {
+                return Message.FromJson(response.Content);
+            }
+            return null;
         }
 
         public static Message PostMessage(string token, Message message)
         {
             //TODO: PostMessage
-            return new Message();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Messages", Method.POST);
+            request.AddHeader("Authorization", "Bearer " + token);
+
+            request.AddJsonBody(message.ToJson());
+            var response = client.Execute(request);
+            //Console.WriteLine(response.Content);
+            //Console.WriteLine(response.StatusCode);//NotFound|Created
+            if (!response.Content.Contains("Invalid user") || response.Content.Trim().Length != 0)
+            {
+                return Message.FromJson(response.Content);
+            }
+            return null;
         }
 
         public static Message PutMessage(string token, Message message)
         {
             //TODO: PutMessage
-            return new Message();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest($"Messages/{message.MessageId}", Method.PUT);
+            request.AddJsonBody(message.ToJson());
+            var response = client.Execute(request);
+            if (!response.Content.Contains("Invalid user") || response.Content.Trim().Length != 0)
+            {
+                return Message.FromJson(response.Content);
+            }
+            return null;
         }
 
         public static void DeleteMessage(string token, int id)
         {
             //TODO: DeleteMessage
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest($"Messages/{id}", Method.DELETE);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
         }
     }
 }
