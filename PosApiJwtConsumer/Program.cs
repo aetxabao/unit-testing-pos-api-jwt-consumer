@@ -89,36 +89,83 @@ namespace PosApiJwtConsumer
         public static LoginResponse PostLogin(LoginRequest login)
         {
             //TODO: PostLogin
-            return new LoginResponse();            
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Users/login", Method.POST);
+            request.AddJsonBody(login.ToJson());
+            var response = client.Execute(request);
+            Console.WriteLine(response.Content);
+            Console.WriteLine(response.StatusCode);
+            return LoginResponse.FromJson(response.Content);           
         }
 
         public static List<Message> GetMessages(string token)
         {
             //TODO: GetMessages
-            return new List<Message>();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Messages", Method.GET);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+            Console.WriteLine("\nGetMessages:");
+            Console.WriteLine(response.Content);
+            Console.WriteLine(response.StatusCode);
+            if (response.Content.Contains("Invalid user") || response.Content.Contains("No message was found") || response.Content.Trim().Length == 0)
+            {
+                return new List<Message>();
+            }
+            
+            return Message.ListFromJson(response.Content);
+ 
         }
-
+ 
         public static Message GetMessage(string token, int messageId)
         {
             //TODO: GetMessage
-            return new Message();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Messages/" + messageId, Method.GET);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+            Console.WriteLine("\nGetMessage:");
+            Console.WriteLine(response.Content);
+            if (response.Content == "Invalid customer" || response.Content == "No order was found")
+            {
+                return new Message();
+            }
+            return Message.FromJson(response.Content);
         }
-
+ 
         public static Message PostMessage(string token, Message message)
         {
             //TODO: PostMessage
-            return new Message();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Messages", Method.POST);
+            request.AddHeader("Authorization", "Bearer " + token);
+            request.AddJsonBody(message);
+            var response = client.Execute(request);
+            Console.WriteLine("\nPostMessages:");
+            Console.WriteLine(response.Content);
+            return Message.FromJson(response.Content);
         }
+
 
         public static Message PutMessage(string token, Message message)
         {
             //TODO: PutMessage
-            return new Message();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Messages/" + message.MessageId, Method.PUT);
+            request.AddHeader("Authorization", "Bearer " + token);
+            request.AddJsonBody(message.ToJson());
+            var response = client.Execute(request);
+            return message;
         }
 
         public static void DeleteMessage(string token, int id)
         {
             //TODO: DeleteMessage
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Messages/" + id, Method.DELETE);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+            Console.WriteLine("\nPutMessages:");
         }
     }
 }
