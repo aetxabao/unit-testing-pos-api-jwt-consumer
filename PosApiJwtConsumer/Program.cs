@@ -10,12 +10,14 @@ namespace PosApiJwtConsumer
     {
         public const string BASEURL = "https://localhost:5001/api";
 
-        private const string USERNAME = "test";
-        private const string PASSWORD = "M3l0c0t0n3s!";
+        // private const string USERNAME = "test";
+        // private const string PASSWORD = "M3l0c0t0n3s!";
         // private const string USERNAME = "other";
         // private const string PASSWORD = "T0m4t3s!";
         // private const string USERNAME = "wrong";
         // private const string PASSWORD = "xxxxxxxx";
+        private const string USERNAME = "aetxabao";
+        private const string PASSWORD = "P4t4t4s!";
 
         public static void Main(string[] args)
         {
@@ -88,37 +90,92 @@ namespace PosApiJwtConsumer
 
         public static LoginResponse PostLogin(LoginRequest login)
         {
-            //TODO: PostLogin
-            return new LoginResponse();            
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Users/login", Method.POST);
+            //request.AddParameter("data", data);
+            request.AddJsonBody(login.ToJson());
+            var response = client.Execute(request);
+            //Console.WriteLine(response.Content);
+            //Console.WriteLine(response.StatusCode);//NotFound|Created|BadRequest
+            if (response.StatusCode.ToString().Contains("Invalid credentials"))
+            {
+                return new LoginResponse { Token = response.Content };
+            }
+            return LoginResponse.FromJson(response.Content);          
         }
 
         public static List<Message> GetMessages(string token)
         {
-            //TODO: GetMessages
-            return new List<Message>();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Messages", Method.GET);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+            // Console.WriteLine("\nGetOrders:");
+            // Console.WriteLine(response.Content);
+            if (response.Content == "\"Invalid user\"" || response.Content == "\"No message was found\"" || response.Content.Trim().Length == 0)
+            {
+                return new List<Message>();
+            } 
+            return Message.ListFromJson(response.Content);
         }
 
         public static Message GetMessage(string token, int messageId)
         {
-            //TODO: GetMessage
-            return new Message();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest($"/Messages/{messageId}", Method.GET);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+            // Console.WriteLine(response.Content);
+            // Console.WriteLine(response.StatusCode);//NotFound|OK
+            if (response.Content == "Invalid user or old token!" || response.Content == $"Message {messageId} was not found" || response.Content.Trim().Length == 0)
+            {
+                return new Message();
+            } 
+            return Message.FromJson(response.Content);
+            
         }
 
         public static Message PostMessage(string token, Message message)
         {
-            //TODO: PostMessage
-            return new Message();
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest("Messages", Method.POST);
+            request.AddHeader("Authorization", "Bearer " + token);
+            request.AddJsonBody(message.ToJson());
+            var response = client.Execute(request);
+            // Console.WriteLine(response.Content);
+            // Console.WriteLine(response.StatusCode);//NotFound|Created
+            if (response.Content == "Invalid user or old token!" || response.Content == $"Message {message} was not found" || response.Content.Trim().Length == 0)
+            {
+                return new Message();
+            } 
+            return Message.FromJson(response.Content);
         }
 
         public static Message PutMessage(string token, Message message)
         {
-            //TODO: PutMessage
-            return new Message();
+            var client = new RestClient(BASEURL);
+            // var request = new RestRequest("TodoItems", Method.PUT);
+            // request.AddParameter("id", id);
+            // request.AddParameter("data", data);
+            var request = new RestRequest($"/Messages/{message.MessageId}", Method.PUT);
+            request.AddJsonBody(message.ToJson());
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+            // Console.WriteLine(response.StatusCode);//NoContent|BadRequest
+            if (response.Content == "Invalid user or old token!" || response.Content == $"Message {message} was not found" || response.Content.Trim().Length == 0)
+            {
+                return new Message();
+            } 
+            return Message.FromJson(response.Content);
         }
 
         public static void DeleteMessage(string token, int id)
         {
-            //TODO: DeleteMessage
+            var client = new RestClient(BASEURL);
+            var request = new RestRequest($"Messages/{id}", Method.DELETE);
+            request.AddHeader("Authorization", "Bearer " + token);
+            var response = client.Execute(request);
+            //Console.WriteLine(response.StatusCode);//NotFound|NoContent
         }
     }
 }
