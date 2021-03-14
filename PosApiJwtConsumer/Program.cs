@@ -113,7 +113,7 @@ namespace PosApiJwtConsumer
             Console.WriteLine("\nGetMessages:");
             Console.WriteLine(response.Content);
             Console.WriteLine(response.StatusCode);
-            if (response.StatusCode.ToString().Contains("BadRequest") || response.StatusCode.ToString().Contains("Unauthorized") || response.Content.Trim().Length == 0)
+            if (response.Content.Contains("Invalid user") || response.Content.Contains("No message was found") || response.Content.Trim().Length == 0)
             {
                 return new List<Message>();
             }
