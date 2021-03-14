@@ -88,7 +88,6 @@ namespace PosApiJwtConsumer
 
         public static LoginResponse PostLogin(LoginRequest login)
         {
-            //TODO: PostLogin
             var client = new RestClient(BASEURL);
             var request = new RestRequest("Users/login", Method.POST); //esto sale en el swagger
             //request.AddParameter("data", data);
@@ -105,7 +104,6 @@ namespace PosApiJwtConsumer
 
         public static List<Message> GetMessages(string token)
         {
-            //TODO: GetMessages
             var client = new RestClient(BASEURL);
             var request = new RestRequest("Messages", Method.GET);
             request.AddHeader("Authorization", "Bearer " + token);
@@ -121,7 +119,6 @@ namespace PosApiJwtConsumer
 
         public static Message GetMessage(string token, int messageId)
         {
-            //TODO: GetMessage
             var client = new RestClient(BASEURL);
             var request = new RestRequest($"/Messages/{messageId}", Method.GET);
             request.AddHeader("Authorization", "Bearer " + token);
@@ -137,7 +134,6 @@ namespace PosApiJwtConsumer
 
         public static Message PostMessage(string token, Message message)
         {
-            //TODO: PostMessage
             var client = new RestClient(BASEURL);
             var request = new RestRequest("Messages", Method.POST);
             request.AddHeader("Authorization", "Bearer " + token);
@@ -155,7 +151,6 @@ namespace PosApiJwtConsumer
 
         public static Message PutMessage(string token, Message message)
         {
-            //TODO: PutMessage
             var client = new RestClient(BASEURL);
             var request = new RestRequest($"Messages/{message.MessageId}", Method.PUT);
             request.AddJsonBody(message.ToJson());
@@ -169,7 +164,6 @@ namespace PosApiJwtConsumer
 
         public static void DeleteMessage(string token, int id)
         {
-            //TODO: DeleteMessage
             var client = new RestClient(BASEURL);
             var request = new RestRequest($"Messages/{id}", Method.DELETE);
             request.AddHeader("Authorization", "Bearer " + token);
